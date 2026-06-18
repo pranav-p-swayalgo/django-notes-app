@@ -3,36 +3,48 @@ name: CI pipeline
 on:
   workflow_dispatch:
 
-
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Checkout code
       - name: Checkout code
         uses: actions/checkout@v4
 
-# 2. Setup Docker environment check
-
+      # 2. Verify Docker
       - name: Verify Docker
         run: |
-         docker --version
-         docker compose version
+          docker --version
+          docker compose version
 
-# 3. Build Docker image
-      - name: Build Docker image
-        run: docker build -t django-backend .
+      # 3. Build images
+      - name: Build Docker images
+        run: docker compose build
 
-# 4. Run docker compose up (DETACHED MODE)
-      - name: Start services with Docker Compose
-        run : docker compose up -d
+      # 4. Start services (detached for CI)
+      - name: Start services
+        run: docker compose up -d
 
-# 5. Check running containers
-      - name : Show running containers
-        run : docker ps 
+      # 5. Show container status
+      - name: Show running containers
+        run: docker ps
 
-# 6. Health check (optional but important)
-      - name : Test backend endpoint 
-        run : curl -f http://localhost:8000 || echo "App not ready"
+      # 6. Show logs (VERY IMPORTANT for debugging)
+      - name: Show logs
+        run: docker compose logs --tail=100
 
-      
+      # 7. Wait for backend to be ready
+      - name: Wait for backend health check
+        run: |
+          for i in {1..12}; do
+            echo "Checking backend... attempt $i"
+            curl -f http://localhost:8000 && exit 0
+            sleep 5
+          done
+          echo "App failed to start"
+          exit 1
+
+      # 8. Final verification
+      - name: Final container check
+        run: docker compose ps
