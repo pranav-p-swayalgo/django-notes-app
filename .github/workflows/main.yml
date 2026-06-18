@@ -6,33 +6,33 @@ on:
 
 jobs:
   build:
-  runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
 
-  steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
 # 2. Setup Docker environment check
 
-    - name: Verify Docker
-      run: 
+      - name: Verify Docker
+        run: 
          docker --version
          docker compose version
 
 # 3. Build Docker image
-    - name: Build Docker image
-      run: docker build -t django-backend .
+      - name: Build Docker image
+        run: docker build -t django-backend .
 
 # 4. Run docker compose up (DETACHED MODE)
-    - name: Start services with Docker Compose
-      run : docker compose up 
+      - name: Start services with Docker Compose
+        run : docker compose up 
 
 # 5. Check running containers
-    - name : Show running containers
-      run : docker ps 
+      - name : Show running containers
+        run : docker ps 
 
 # 6. Health check (optional but important)
-    - name : Test backend endpoint 
-      run : curl -f http://localhost:8000 || echo "App not ready"
+      - name : Test backend endpoint 
+        run : curl -f http://localhost:8000 || echo "App not ready"
 
       
